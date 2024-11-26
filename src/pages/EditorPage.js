@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Editor from "../components/Editor";
 import "../App.css";
 import { initSocket } from "../socket";
@@ -22,7 +22,7 @@ function EditorPage() {
     reactNavigator("/");
   }, [reactNavigator]);
 
-  
+
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();

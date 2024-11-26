@@ -1,89 +1,90 @@
-import React, { useEffect, useRef } from "react";
-import Codemirror from "codemirror";
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/dracula.css";
-import "codemirror/mode/javascript/javascript";
-import "codemirror/addon/edit/closebrackets";
-import "codemirror/addon/edit/closetag";
-import "codemirror/addon/display/placeholder";
-import "codemirror/addon/selection/active-line";
-import "codemirror/addon/search/searchcursor";
-import "codemirror/addon/dialog/dialog.css";
-import "codemirror/addon/dialog/dialog";
+import React, { useEffect, useRef, useCallback } from 'react';
+import Codemirror from 'codemirror';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/dracula.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/edit/closetag';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/javascript-hint';
+import 'codemirror/addon/hint/show-hint.css';
+import ACTIONS from '../Actions';
 
-import "../App.css";
-import ACTIONS from "../Actions";
-
-function Editor({ socketRef, roomId, onCodeChange }) {
+const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const editorRef = useRef(null);
-  const codemirrorInstanceRef = useRef(null);
+  const textareaRef = useRef(null);
 
+  // Memoize the code change handler
+  const handleCodeChange = useCallback((instance, changes) => {
+    const { origin } = changes;
+    const code = instance.getValue();
+    
+    // Only emit changes that are not from server sync
+    if (origin !== 'setValue') {
+      onCodeChange(code);
+      
+      // Safely check if socket is available before emitting
+      if (socketRef.current) {
+        socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+          roomId,
+          code,
+        });
+      }
+    }
+  }, [onCodeChange, roomId, socketRef]);
+
+  // Main initialization useEffect
   useEffect(() => {
-    // Initialize the editor
-    const editor = Codemirror.fromTextArea(editorRef.current, {
-      mode: { name: "javascript", json: true },
-      theme: "dracula",
-      autoCloseTags: true,
-      autoCloseBrackets: true,
-      lineNumbers: true,
-      lineWrapping: true,
-      matchBrackets: true,
-      highlightSelectionMatches: true,
-      showCursorWhenSelecting: true,
-      styleActiveLine: true,
-      placeholder: "Start typing your code here...",
+    if (!textareaRef.current) return;
+
+    // Create CodeMirror instance
+    const codeMirrorInstance = Codemirror.fromTextArea(
+      textareaRef.current,
+      {
+        mode: { name: 'javascript', json: true },
+        theme: 'dracula',
+        autoCloseTags: true,
+        autoCloseBrace: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        extraKeys: {
+          'Ctrl-Space': 'autocomplete',
+        },
+      }
+    );
+
+    // Store reference
+    editorRef.current = codeMirrorInstance;
+
+    // Attach change listener
+    codeMirrorInstance.on('change', handleCodeChange);
+
+    // Socket listener for external code changes
+    const socketCurrent = socketRef.current;
+    socketCurrent?.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+      if (code !== null) {
+        codeMirrorInstance.setValue(code);
+      }
     });
 
-    editor.setSize("100%", "100%");
-    codemirrorInstanceRef.current = editor;
-
-    // Listen for changes in the editor and emit them
-    editor.on("change", (instance, changes) => {
-      const { origin } = changes;
-      const code = instance.getValue();
-      onCodeChange(code);
-      console.log("Emitting code change:", code);
-      if (origin !== "setValue") {
-          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-              roomId,
-              code,
-          });
-      }
-  });
-  
-    
-
-    // Clean up on unmount
+    // Cleanup function
     return () => {
-      editor.toTextArea();
+      socketCurrent?.off(ACTIONS.CODE_CHANGE);
+      codeMirrorInstance.toTextArea();
     };
-  }, [socketRef, roomId]);
+  }, [socketRef, handleCodeChange]);
 
-  // Listen for code changes from the server and update the editor
+  // Effect to reset editor when roomId changes
   useEffect(() => {
-    if (socketRef.current) {
-      socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-        console.log("Received code change:", code);
-        if (codemirrorInstanceRef.current && code !== null && code !== undefined) {
-          const currentCode = codemirrorInstanceRef.current.getValue();
-          if (code !== currentCode) {
-            codemirrorInstanceRef.current.setValue(code);
-          }
-        }
-      });
+    if (editorRef.current) {
+      editorRef.current.setValue('');
     }
-    return () => {
-      socketRef.current.off(ACTIONS.CODE_CHANGE);
-    };
-  }, [socketRef.current]);
-  
+  }, [roomId]);
 
-  
   return (
-    <div className="editorWrapper">
-      <textarea id="realTimeEditor" ref={editorRef}></textarea>
+    <div className="editor-container">
+      <textarea ref={textareaRef} id="realtimeEditor"></textarea>
     </div>
   );
-}
+};
 
-export default Editor;
+export default React.memo(Editor);

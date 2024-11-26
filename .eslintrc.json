@@ -1,9 +1,9 @@
 {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "react-hooks/exhaustive-deps": "warn"
-    }
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "rules": {
+    "react-hooks/exhaustive-deps": "warn"
   }
+}

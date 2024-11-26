@@ -16,11 +16,13 @@ function EditorPage() {
   const codeRef= useRef(null);
   const { roomId } = useParams();
   const [clients, setClients] = useState([]);
-  const handleErrors = (e) => {
+  const handleErrors = useCallback((e) => {
     console.log("socket error", e);
     toast.error("Socket connection failed, try again later");
     reactNavigator("/");
-  };
+  }, [reactNavigator]);
+
+  
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
@@ -57,11 +59,11 @@ function EditorPage() {
     };
     init();
     return () => {
-      socketRef.current.disconnect();
-      socketRef.current.off(ACTIONS.JOINED);
-      socketRef.current.off(ACTIONS.DISCONNECTED);
+      socketRef.current?.disconnect();
+      socketRef.current?.off(ACTIONS.JOINED);
+      socketRef.current?.off(ACTIONS.DISCONNECTED);
     };
-  }, [roomId, location.state?.username, handleErrors]);
+  }, [roomId, location.state?.username, handleErrors, reactNavigator]);
 
   async function copyRoomId(){
     try{

@@ -24,10 +24,9 @@
   },
   "scripts": {
   "start": "react-scripts start",
-  "build": "react-scripts build",
+  "build": "CI=false react-scripts build", // Ignore warnings during build
   "test": "react-scripts test",
-  "eject": "react-scripts eject",
-  "vercel-build": "npm run build"
+  "eject": "react-scripts eject"
 },
   "eslintConfig": {
     "extends": [

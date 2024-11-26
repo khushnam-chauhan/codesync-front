@@ -56,12 +56,12 @@ function EditorPage() {
       });
     };
     init();
-    return ()=>{
-       socketRef.current.disconnect();
-       socketRef.current.off(ACTIONS.JOINED);
-       socketRef.current.off(ACTIONS.DISCONNECTED);
-    }
-  }, []);
+    return () => {
+      socketRef.current.disconnect();
+      socketRef.current.off(ACTIONS.JOINED);
+      socketRef.current.off(ACTIONS.DISCONNECTED);
+    };
+  }, [roomId, location.state?.username, handleErrors]);
 
   async function copyRoomId(){
     try{

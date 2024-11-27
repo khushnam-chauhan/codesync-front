@@ -111,55 +111,67 @@ footer a{
   display: grid;
   grid-template-columns: 230px 1fr;
 }
-
-.aside{
+.aside {
   background-color: #1c1e29;
   padding: 16px;
   color: #fff;
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* Space between top content and buttons */
+  height: 100vh; /* Ensure the container takes full viewport height */
+  gap: 1rem; /* Reduced gap for better spacing consistency */
 }
 
-.asideInner{
+.asideInner {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Consistent spacing between logo and client list */
 }
-.clientsList{
+
+.clientsList {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
 }
-.client{
+
+.client {
   display: flex;
   align-items: center;
   flex-direction: column;
   font-weight: bold;
 }
 
-.username{
+.username {
   margin-top: 10px;
 }
 
-.logo{
+.logo {
   border-bottom: 1px solid #424242;
   padding-bottom: 10px;
 }
 
-.logoImage{
+.logoImage {
   height: 60px;
-
 }
 
-.leaveBtn{
-  margin-top: 20px;
+.leaveBtn {
   background-color: #4aed88;
-  width:100% ;
-  margin-left: auto;
+  width: 100%;
+  padding: 10px 0; /* Consistent padding for buttons */
+  margin-top: auto; /* Ensure button stays at the bottom */
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
 }
-.leaveBtn:hover{
+
+.leaveBtn:hover {
   background-color: #2b824c;
 }
-
 
 .editorWrapper {
   height: 100vh; 

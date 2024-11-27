@@ -6,22 +6,24 @@ import { useLocation } from "react-router-dom";
 import Client from "../components/Client";
 import ACTIONS from "../Actions";
 import toast from "react-hot-toast";
-import logo from '../assest/logo.png';
+import logo from "../assest/logo.png";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 function EditorPage() {
   const location = useLocation();
   const socketRef = useRef(null);
   const reactNavigator = useNavigate();
-  const codeRef= useRef(null);
+  const codeRef = useRef(null);
   const { roomId } = useParams();
   const [clients, setClients] = useState([]);
-  const handleErrors = useCallback((e) => {
-    console.log("socket error", e);
-    toast.error("Socket connection failed, try again later");
-    reactNavigator("/");
-  }, [reactNavigator]);
-
+  const handleErrors = useCallback(
+    (e) => {
+      console.log("socket error", e);
+      toast.error("Socket connection failed, try again later");
+      reactNavigator("/");
+    },
+    [reactNavigator]
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -41,10 +43,9 @@ function EditorPage() {
             console.log(`${username} joined`);
           }
           setClients(clients);
-          socketRef.current.emit(ACTIONS.SYNC_CODE,{
-            code:codeRef.current,
+          socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
             socketId,
-
           });
         }
       );
@@ -52,8 +53,7 @@ function EditorPage() {
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
         toast.success(`${username} left the room`);
         setClients((prev) => {
-          return prev.filter(
-            (client) => client.socketId !== socketId);
+          return prev.filter((client) => client.socketId !== socketId);
         });
       });
     };
@@ -65,18 +65,18 @@ function EditorPage() {
     };
   }, [roomId, location.state?.username, handleErrors, reactNavigator]);
 
-  async function copyRoomId(){
-    try{
+  async function copyRoomId() {
+    try {
       await navigator.clipboard.writeText(roomId);
       toast.success("Room ID copied to clipboard");
-    }catch(err){
-      toast.error('could not copy Room Id');
+    } catch (err) {
+      toast.error("could not copy Room Id");
       console.error();
     }
-  };
+  }
 
-  function leaveRoom(){
-    reactNavigator('/');
+  function leaveRoom() {
+    reactNavigator("/");
   }
   if (!location.state) {
     return <Navigate to="/" />;
@@ -86,10 +86,10 @@ function EditorPage() {
     <div className="mainWrap">
       <div className="aside">
         <div className="asideInner">
-        <div className='logo-wrapper'>
-        <img className="collab-logo" src={logo} alt="collab-logo" />
-        <h2>Collab</h2>
-        </div>
+          <div className="logo-wrapper">
+            <img className="collab-logo" src={logo} alt="collab-logo" />
+            <h2>Collab</h2>
+          </div>
           <h3>connected</h3>
           <div className="clientsList">
             {clients.map((client) => (
@@ -97,13 +97,23 @@ function EditorPage() {
             ))}
           </div>
         </div>
-        <button className="btn copyBtn" onClick={copyRoomId}>Copy ROOM ID</button>
-        <button className="btn leaveBtn" onClick={leaveRoom}>Leave</button>
+        <div>
+          <button className="btn copyBtn" onClick={copyRoomId}>
+            Copy ROOM ID
+          </button>
+          <button className="btn leaveBtn" onClick={leaveRoom}>
+            Leave
+          </button>
+        </div>
       </div>
       <div className="editorWrap">
-        <Editor  socketRef={socketRef} roomId={roomId} onCodeChange={(code)=>{
-          codeRef.current=code;
-        }}/>
+        <Editor
+          socketRef={socketRef}
+          roomId={roomId}
+          onCodeChange={(code) => {
+            codeRef.current = code;
+          }}
+        />
       </div>
     </div>
   );
